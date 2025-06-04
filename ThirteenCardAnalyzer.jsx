@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
 const RANKS = '23456789TJQKA';
+const SUITS = ['H', 'D', 'S', 'C'];
 
 function cardValue(card) {
   return RANKS.indexOf(card[0]);
@@ -30,7 +31,7 @@ function fiveCardRank(cards) {
 
   if (flush && straight) return [8, svals];
   if (vals[0][1] === 4) return [7, [cardValue(vals[0][0])]];
-  if (vals[0][1] === 3 && vals[1][1] === 2) return [6, [cardValue(vals[0][0])]];
+  if (vals[0][1] === 3 && vals[1][1] === 2) return [6, [cardValue(vals[0][0])]]; // 葫芦
   if (flush) return [5, values];
   if (straight) return [4, svals];
   if (vals[0][1] === 3) return [3, [cardValue(vals[0][0])]];
@@ -73,8 +74,7 @@ function evaluate(cards) {
                   const bot = rest1.filter((_, idx) => ![a, b, c, d, e].includes(idx));
                   if (isValidComb(top, mid, bot)) {
                     const score = [fiveCardRank(bot), fiveCardRank(mid), threeCardRank(top)];
-                    if (!best || JSON.stringify(score) > JSON.stringify(best[0]))
-                      best = [score, { top, mid, bot }];
+                    if (!best || score > best[0]) best = [score, { top, mid, bot }];
                   }
                 }
               }
@@ -100,7 +100,7 @@ function formatCard(card) {
         color: isRed ? 'red' : 'black',
         marginRight: '8px',
         fontWeight: 'bold',
-        fontSize: '1.2rem'
+        fontSize: '1.2rem',
       }}
     >
       {suitSymbols[suit]}{rank}
@@ -170,11 +170,11 @@ export default function ThirteenCardAnalyzer() {
 
       <div
         style={{
-          marginTop: '1.5rem',
+          marginTop: '2rem',
           textAlign: 'center',
           maxWidth: '400px',
           marginInline: 'auto',
-          fontSize: '0.8rem'
+          fontSize: '0.9rem'
         }}
       >
         <h3>使用说明：</h3>
@@ -187,3 +187,4 @@ export default function ThirteenCardAnalyzer() {
     </div>
   );
 }
+
