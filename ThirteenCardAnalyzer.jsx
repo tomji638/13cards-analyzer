@@ -87,8 +87,8 @@ function evaluate(cards) {
 }
 
 export default function ThirteenCardAnalyzer() {
-  const [input1, setInput1] = useState('AH AD AC KH KS');
-  const [input2, setInput2] = useState('QD QH QS JC JD 9S 8H 7D');
+  const [input1, setInput1] = useState('AH AD AC KH KS QD QH');
+  const [input2, setInput2] = useState('QS JC JD 9S 8H 7D');
   const [result, setResult] = useState(null);
 
   const handleAnalyze = () => {
