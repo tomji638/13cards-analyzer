@@ -73,7 +73,8 @@ function evaluate(cards) {
                   const bot = rest1.filter((_, idx) => ![a, b, c, d, e].includes(idx));
                   if (isValidComb(top, mid, bot)) {
                     const score = [fiveCardRank(bot), fiveCardRank(mid), threeCardRank(top)];
-                    if (!best || score > best[0]) best = [score, { top, mid, bot }];
+                    if (!best || JSON.stringify(score) > JSON.stringify(best[0]))
+                      best = [score, { top, mid, bot }];
                   }
                 }
               }
@@ -86,7 +87,6 @@ function evaluate(cards) {
   return best ? best[1] : null;
 }
 
-// 🌈 格式化牌面（带颜色与图标）
 function formatCard(card) {
   const rank = card.slice(0, -1);
   const suit = card.slice(-1);
@@ -183,10 +183,7 @@ export default function ThirteenCardAnalyzer() {
         <p>方块：D（如 QD 表示方块Q）</p>
         <p>梅花：C（如 7C 表示梅花7）</p>
         <p>10 用 T 表示，如 10H 应写作 TH</p>
-        <p>Desgin by Tom 2025 VER1.0</p>
       </div>
     </div>
   );
 }
-
-
