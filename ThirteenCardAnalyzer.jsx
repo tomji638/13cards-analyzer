@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 
 const RANKS = '23456789TJQKA';
@@ -35,7 +34,8 @@ function fiveCardRank(cards) {
   if (flush) return [5, values];
   if (straight) return [4, svals];
   if (vals[0][1] === 3) return [3, [cardValue(vals[0][0])]];
-  if (vals.filter(v => v[1] === 2).length === 2) return [2, vals.filter(v => v[1] === 2).map(v => cardValue(v[0])).sort((a, b) => b - a)];
+  if (vals.filter(v => v[1] === 2).length === 2)
+    return [2, vals.filter(v => v[1] === 2).map(v => cardValue(v[0])).sort((a, b) => b - a)];
   if (vals[0][1] === 2) return [1, [cardValue(vals[0][0])]];
   return [0, values];
 }
@@ -101,17 +101,18 @@ export default function ThirteenCardAnalyzer() {
   };
 
   return (
-    <div className="p-4 max-w-3xl mx-auto">
-      <h2 className="text-xl font-bold mb-4">十三张牌力分析器</h2>
+    <div className="p-4 max-w-4xl mx-auto">
+      <h2 className="text-2xl font-bold mb-4">十三张牌力分析器</h2>
       <input
         value={input}
         onChange={e => setInput(e.target.value)}
-        className="w-full p-2 border rounded mb-4"
+        className="p-2 border rounded mb-4 text-lg"
         placeholder="输入13张牌，如 AH AD AC KH ..."
+        style={{ width: '100%', fontSize: '1.25rem', overflowX: 'auto' }}
       />
       <button onClick={handleAnalyze} className="bg-blue-500 text-white px-4 py-2 rounded">分析最优组合</button>
       {result && (
-        <div className="mt-4">
+        <div className="mt-4 text-lg">
           <div><strong>上墩:</strong> {result.top.join(' ')}</div>
           <div><strong>中墩:</strong> {result.mid.join(' ')}</div>
           <div><strong>下墩:</strong> {result.bot.join(' ')}</div>
