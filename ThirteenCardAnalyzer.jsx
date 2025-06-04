@@ -87,13 +87,14 @@ function evaluate(cards) {
 }
 
 export default function ThirteenCardAnalyzer() {
-  const [input, setInput] = useState('AH AD AC KH KS QD QH QS JC JD 9S 8H 7D');
+  const [input1, setInput1] = useState('AH AD AC KH KS');
+  const [input2, setInput2] = useState('QD QH QS JC JD 9S 8H 7D');
   const [result, setResult] = useState(null);
 
   const handleAnalyze = () => {
-    const cards = input.trim().split(/\s+/);
+    const cards = (input1 + ' ' + input2).trim().split(/\s+/);
     if (cards.length !== 13) {
-      alert('请输入13张牌');
+      alert('请确保共输入13张牌');
       return;
     }
     const r = evaluate(cards);
@@ -101,23 +102,48 @@ export default function ThirteenCardAnalyzer() {
   };
 
   return (
-    <div className="p-4 max-w-4xl mx-auto">
-      <h2 className="text-2xl font-bold mb-4">罗宋分析器</h2>
+    <div className="p-4 max-w-xl mx-auto text-center">
+      <h1 className="text-3xl font-bold mb-6">罗宋分析器</h1>
+
+      <div className="mb-2 text-left">请输入13张牌（可分两行）：</div>
+
       <input
-        value={input}
-        onChange={e => setInput(e.target.value)}
-        className="p-2 border rounded mb-4 text-lg"
-        placeholder="输入13张牌，如 AH AD AC KH ..."
-        style={{ width: '100%', fontSize: '1.25rem', overflowX: 'auto' }}
+        value={input1}
+        onChange={e => setInput1(e.target.value)}
+        className="w-full p-2 border rounded mb-2 text-lg"
+        placeholder="如：AH AD AC KH KS"
       />
-      <button onClick={handleAnalyze} className="bg-blue-500 text-white px-4 py-2 rounded">分析最优组合</button>
+      <input
+        value={input2}
+        onChange={e => setInput2(e.target.value)}
+        className="w-full p-2 border rounded mb-6 text-lg"
+        placeholder="如：QD QH QS JC JD 9S 8H"
+      />
+
+      <button
+        onClick={handleAnalyze}
+        className="bg-blue-600 text-white px-6 py-3 rounded text-lg mb-6"
+      >
+        分析最优组合
+      </button>
+
       {result && (
-        <div className="mt-4 text-lg">
-          <div><strong>头道:</strong> {result.top.join(' ')}</div>
-          <div><strong>中道:</strong> {result.mid.join(' ')}</div>
-          <div><strong>底道:</strong> {result.bot.join(' ')}</div>
+        <div className="space-y-4 text-lg">
+          <div><strong>头道：</strong>{result.top.join(' ')}</div>
+          <div><strong>中道：</strong>{result.mid.join(' ')}</div>
+          <div><strong>底道：</strong>{result.bot.join(' ')}</div>
         </div>
       )}
+
+      <div className="mt-8 text-sm text-gray-600 leading-relaxed">
+        <hr className="my-4" />
+        <p>使用说明：</p>
+        <p>红桃：H（如 AH 表示红桃A）</p>
+        <p>黑桃：S（如 KS 表示黑桃K）</p>
+        <p>方块：D（如 QD 表示方块Q）</p>
+        <p>梅花：C（如 7C 表示梅花7）</p>
+        <p>10用 T 表示，如 10H 应写作 TH</p>
+      </div>
     </div>
   );
 }
