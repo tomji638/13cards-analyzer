@@ -94,7 +94,7 @@ export default function ThirteenCardAnalyzer() {
   const handleAnalyze = () => {
     const cards = (input1 + ' ' + input2).trim().split(/\s+/);
     if (cards.length !== 13) {
-      alert('请确保共输入13张牌');
+      alert('请输入13张牌');
       return;
     }
     const r = evaluate(cards);
@@ -102,48 +102,55 @@ export default function ThirteenCardAnalyzer() {
   };
 
   return (
-    <div className="p-4 max-w-xl mx-auto text-center">
-      <h1 className="text-3xl font-bold mb-6">罗宋分析器</h1>
-
-      <div className="mb-2 text-left">请输入13张牌（可分两行）：</div>
-
-      <input
-        value={input1}
-        onChange={e => setInput1(e.target.value)}
-        className="w-full p-2 border rounded mb-2 text-lg"
-        placeholder="如：AH AD AC KH KS"
-      />
-      <input
-        value={input2}
-        onChange={e => setInput2(e.target.value)}
-        className="w-full p-2 border rounded mb-6 text-lg"
-        placeholder="如：QD QH QS JC JD 9S 8H"
-      />
+    <div style={{ textAlign: 'center', padding: '2rem', fontFamily: 'sans-serif' }}>
+      <h1>罗宋分析器</h1>
+      <div style={{ marginBottom: '0.5rem' }}>请输入13张牌（可分两行）：</div>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+        <input
+          value={input1}
+          onChange={e => setInput1(e.target.value)}
+          style={{ width: '21ch', padding: '0.5rem', fontSize: '1rem', textAlign: 'center' }}
+        />
+        <input
+          value={input2}
+          onChange={e => setInput2(e.target.value)}
+          style={{ width: '21ch', padding: '0.5rem', fontSize: '1rem', textAlign: 'center' }}
+        />
+      </div>
 
       <button
         onClick={handleAnalyze}
-        className="bg-blue-600 text-white px-6 py-3 rounded text-lg mb-6"
+        style={{
+          marginTop: '1.5rem',
+          fontSize: '1.2rem',
+          padding: '0.6rem 1.2rem',
+          backgroundColor: '#007bff',
+          color: 'white',
+          border: 'none',
+          borderRadius: '5px',
+          cursor: 'pointer',
+        }}
       >
         分析最优组合
       </button>
 
       {result && (
-        <div className="space-y-4 text-lg">
+        <div style={{ marginTop: '2rem', fontSize: '1.1rem' }}>
           <div><strong>头道：</strong>{result.top.join(' ')}</div>
           <div><strong>中道：</strong>{result.mid.join(' ')}</div>
           <div><strong>底道：</strong>{result.bot.join(' ')}</div>
         </div>
       )}
 
-      <div className="mt-8 text-sm text-gray-600 leading-relaxed">
-        <hr className="my-4" />
-        <p>使用说明：</p>
+      <div style={{ marginTop: '1.5rem', textAlign: 'left', maxWidth: '400px', marginInline: 'auto', fontSize: '0.8rem' }}>
+        <h3>使用说明：</h3>
         <p>红桃：H（如 AH 表示红桃A）</p>
         <p>黑桃：S（如 KS 表示黑桃K）</p>
         <p>方块：D（如 QD 表示方块Q）</p>
         <p>梅花：C（如 7C 表示梅花7）</p>
-        <p>10用 T 表示，如 10H 应写作 TH</p>
+        <p>10 用 T 表示，如 10H 应写作 TH</p>
       </div>
     </div>
   );
 }
+
