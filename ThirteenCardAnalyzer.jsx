@@ -86,13 +86,35 @@ function evaluate(cards) {
   return best ? best[1] : null;
 }
 
+// 🌈 格式化牌面（带颜色与图标）
+function formatCard(card) {
+  const rank = card.slice(0, -1);
+  const suit = card.slice(-1);
+  const suitSymbols = { H: '♥', D: '♦', S: '♠', C: '♣' };
+  const isRed = suit === 'H' || suit === 'D';
+
+  return (
+    <span
+      key={card}
+      style={{
+        color: isRed ? 'red' : 'black',
+        marginRight: '8px',
+        fontWeight: 'bold',
+        fontSize: '1.2rem'
+      }}
+    >
+      {suitSymbols[suit]}{rank}
+    </span>
+  );
+}
+
 export default function ThirteenCardAnalyzer() {
-  const [input1, setInput1] = useState('AH AD AC KH KS QD QH');
-  const [input2, setInput2] = useState('QS JC JD 9S 8H 7D');
+  const [input1, setInput1] = useState('');
+  const [input2, setInput2] = useState('');
   const [result, setResult] = useState(null);
 
   const handleAnalyze = () => {
-    const cards = (input1 + ' ' + input2).trim().split(/\s+/);
+    const cards = `${input1} ${input2}`.trim().split(/\s+/);
     if (cards.length !== 13) {
       alert('请输入13张牌');
       return;
@@ -102,56 +124,69 @@ export default function ThirteenCardAnalyzer() {
   };
 
   return (
-    <div style={{ textAlign: 'center', padding: '2rem', fontFamily: 'sans-serif' }}>
-      <h1>罗宋分析器</h1>
-      <div style={{ marginBottom: '0.5rem' }}>请输入13张牌（可分两行）：</div>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+    <div style={{ fontFamily: 'Arial, sans-serif', textAlign: 'center', padding: '2rem' }}>
+      <h1 style={{ fontSize: '2rem', fontWeight: 'bold' }}>罗宋分析器</h1>
+
+      <div style={{ marginTop: '1rem', marginBottom: '1rem' }}>
+        <p style={{ fontSize: '1rem' }}>请输入13张牌（可分两行）：</p>
         <input
+          type="text"
           value={input1}
           onChange={e => setInput1(e.target.value)}
-          style={{ width: '21ch', padding: '0.5rem', fontSize: '1rem', textAlign: 'center' }}
+          style={{ width: '300px', padding: '8px', marginBottom: '0.5rem', fontSize: '1rem' }}
         />
+        <br />
         <input
+          type="text"
           value={input2}
           onChange={e => setInput2(e.target.value)}
-          style={{ width: '21ch', padding: '0.5rem', fontSize: '1rem', textAlign: 'center' }}
+          style={{ width: '300px', padding: '8px', fontSize: '1rem' }}
         />
       </div>
 
       <button
         onClick={handleAnalyze}
         style={{
-          marginTop: '1.5rem',
-          fontSize: '1.2rem',
-          padding: '0.6rem 1.2rem',
+          padding: '10px 20px',
+          fontSize: '1.1rem',
           backgroundColor: '#007bff',
           color: 'white',
           border: 'none',
-          borderRadius: '5px',
+          borderRadius: '4px',
           cursor: 'pointer',
+          marginBottom: '2rem'
         }}
       >
         分析最优组合
       </button>
 
       {result && (
-        <div style={{ marginTop: '2rem', fontSize: '1.1rem' }}>
-          <div><strong>头道：</strong>{result.top.join(' ')}</div>
-          <div><strong>中道：</strong>{result.mid.join(' ')}</div>
-          <div><strong>底道：</strong>{result.bot.join(' ')}</div>
+        <div style={{ marginTop: '1rem', textAlign: 'center', fontSize: '1.1rem' }}>
+          <div><strong>头道:</strong> {result.top.map(card => formatCard(card))}</div>
+          <div><strong>中道:</strong> {result.mid.map(card => formatCard(card))}</div>
+          <div><strong>底道:</strong> {result.bot.map(card => formatCard(card))}</div>
         </div>
       )}
 
-      <div style={{ marginTop: '1.5rem', textAlign: 'center', maxWidth: '400px', marginInline: 'auto', fontSize: '0.8rem' }}>
+      <div
+        style={{
+          marginTop: '1.5rem',
+          textAlign: 'center',
+          maxWidth: '400px',
+          marginInline: 'auto',
+          fontSize: '0.8rem'
+        }}
+      >
         <h3>使用说明：</h3>
         <p>红桃：H（如 AH 表示红桃A）</p>
         <p>黑桃：S（如 KS 表示黑桃K）</p>
         <p>方块：D（如 QD 表示方块Q）</p>
         <p>梅花：C（如 7C 表示梅花7）</p>
         <p>10 用 T 表示，如 10H 应写作 TH</p>
-        <p>Desgin by Tom</p>
+        <p>Desgin by Tom 20250605</p>
       </div>
     </div>
   );
 }
+
 
