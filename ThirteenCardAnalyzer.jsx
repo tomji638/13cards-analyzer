@@ -142,7 +142,7 @@ export default function ThirteenCardAnalyzer() {
         </div>
       )}
 
-      <div style={{ marginTop: '1.5rem', textAlign: 'left', maxWidth: '400px', marginInline: 'auto', fontSize: '0.8rem' }}>
+      <div style={{ marginTop: '1.5rem', textAlign: 'center', maxWidth: '400px', marginInline: 'auto', fontSize: '0.8rem' }}>
         <h3>使用说明：</h3>
         <p>红桃：H（如 AH 表示红桃A）</p>
         <p>黑桃：S（如 KS 表示黑桃K）</p>
