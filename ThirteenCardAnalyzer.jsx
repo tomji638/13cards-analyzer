@@ -102,7 +102,7 @@ export default function ThirteenCardAnalyzer() {
 
   return (
     <div className="p-4 max-w-4xl mx-auto">
-      <h2 className="text-2xl font-bold mb-4">十三张牌力分析器</h2>
+      <h2 className="text-2xl font-bold mb-4">罗宋分析器</h2>
       <input
         value={input}
         onChange={e => setInput(e.target.value)}
@@ -113,9 +113,9 @@ export default function ThirteenCardAnalyzer() {
       <button onClick={handleAnalyze} className="bg-blue-500 text-white px-4 py-2 rounded">分析最优组合</button>
       {result && (
         <div className="mt-4 text-lg">
-          <div><strong>上墩:</strong> {result.top.join(' ')}</div>
-          <div><strong>中墩:</strong> {result.mid.join(' ')}</div>
-          <div><strong>下墩:</strong> {result.bot.join(' ')}</div>
+          <div><strong>头道:</strong> {result.top.join(' ')}</div>
+          <div><strong>中道:</strong> {result.mid.join(' ')}</div>
+          <div><strong>底道:</strong> {result.bot.join(' ')}</div>
         </div>
       )}
     </div>
