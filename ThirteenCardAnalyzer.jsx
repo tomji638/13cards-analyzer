@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 
 const RANKS = '23456789TJQKA';
-const SUITS = ['H', 'D', 'S', 'C'];
 
 function cardValue(card) {
   return RANKS.indexOf(card[0]);
@@ -25,20 +24,25 @@ function fiveCardRank(cards) {
   const counts = {};
   const values = cards.map(card => cardValue(card)).sort((a, b) => b - a);
   for (const card of cards) counts[card[0]] = (counts[card[0]] || 0) + 1;
-  const vals = Object.entries(counts).sort((a, b) => b[1] - a[1] || cardValue(b[0]) - cardValue(a[0]));
+  const vals = Object.entries(counts).sort((a, b) => {
+    if (b[1] !== a[1]) return b[1] - a[1];
+    return cardValue(b[0]) - cardValue(a[0]);
+  });
+
   const flush = isFlush(cards);
   const [straight, svals] = isStraight(cards);
 
-  if (flush && straight) return [8, svals];
-  if (vals[0][1] === 4) return [7, [cardValue(vals[0][0])]];
-  if (vals[0][1] === 3 && vals[1][1] === 2) return [6, [cardValue(vals[0][0])]]; // 葫芦
-  if (flush) return [5, values];
-  if (straight) return [4, svals];
-  if (vals[0][1] === 3) return [3, [cardValue(vals[0][0])]];
+  if (flush && straight) return [8, svals]; // 同花顺
+  if (vals[0][1] === 4) return [7, [cardValue(vals[0][0])]]; // 四条
+  if (vals[0][1] === 3 && vals[1][1] === 2)
+    return [6, [cardValue(vals[0][0])]]; // 葫芦，大小只看三条
+  if (flush) return [5, values]; // 同花
+  if (straight) return [4, svals]; // 顺子
+  if (vals[0][1] === 3) return [3, [cardValue(vals[0][0])]]; // 三条
   if (vals.filter(v => v[1] === 2).length === 2)
-    return [2, vals.filter(v => v[1] === 2).map(v => cardValue(v[0])).sort((a, b) => b - a)];
-  if (vals[0][1] === 2) return [1, [cardValue(vals[0][0])]];
-  return [0, values];
+    return [2, vals.filter(v => v[1] === 2).map(v => cardValue(v[0])).sort((a, b) => b - a)]; // 两对
+  if (vals[0][1] === 2) return [1, [cardValue(vals[0][0])]]; // 一对
+  return [0, values]; // 散牌
 }
 
 function threeCardRank(cards) {
@@ -46,44 +50,48 @@ function threeCardRank(cards) {
   const values = cards.map(card => cardValue(card)).sort((a, b) => b - a);
   for (const card of cards) counts[card[0]] = (counts[card[0]] || 0) + 1;
   const vals = Object.entries(counts);
-  if (vals.some(v => v[1] === 3)) return [2, values];
-  if (vals.some(v => v[1] === 2)) return [1, values];
-  return [0, values];
+  if (vals.some(v => v[1] === 3)) return [2, values]; // 三条
+  if (vals.some(v => v[1] === 2)) return [1, values]; // 一对
+  return [0, values]; // 散牌
 }
 
 function isValidComb(top, mid, bot) {
   const t = threeCardRank(top);
   const m = fiveCardRank(mid);
   const b = fiveCardRank(bot);
-  return b[0] > m[0] && m[0] >= t[0];
+  return b[0] > m[0] && m[0] >= t[0]; // 符合 罗宋顺序
 }
 
 function evaluate(cards) {
   let best = null;
-  for (let i = 0; i < cards.length; i++) {
-    for (let j = i + 1; j < cards.length; j++) {
-      for (let k = j + 1; k < cards.length; k++) {
+  const n = cards.length;
+
+  for (let i = 0; i < n; i++)
+    for (let j = i + 1; j < n; j++)
+      for (let k = j + 1; k < n; k++) {
         const top = [cards[i], cards[j], cards[k]];
-        const rest1 = cards.filter((_, idx) => idx !== i && idx !== j && idx !== k);
-        for (let a = 0; a < rest1.length; a++) {
-          for (let b = a + 1; b < rest1.length; b++) {
-            for (let c = b + 1; c < rest1.length; c++) {
-              for (let d = c + 1; d < rest1.length; d++) {
-                for (let e = d + 1; e < rest1.length; e++) {
-                  const mid = [rest1[a], rest1[b], rest1[c], rest1[d], rest1[e]];
-                  const bot = rest1.filter((_, idx) => ![a, b, c, d, e].includes(idx));
+        const remain1 = cards.filter((_, idx) => idx !== i && idx !== j && idx !== k);
+
+        for (let a = 0; a < remain1.length; a++)
+          for (let b = a + 1; b < remain1.length; b++)
+            for (let c = b + 1; c < remain1.length; c++)
+              for (let d = c + 1; d < remain1.length; d++)
+                for (let e = d + 1; e < remain1.length; e++) {
+                  const mid = [remain1[a], remain1[b], remain1[c], remain1[d], remain1[e]];
+                  const bot = remain1.filter((_, idx) => ![a, b, c, d, e].includes(idx));
+
                   if (isValidComb(top, mid, bot)) {
-                    const score = [fiveCardRank(bot), fiveCardRank(mid), threeCardRank(top)];
-                    if (!best || score > best[0]) best = [score, { top, mid, bot }];
+                    const score = [
+                      fiveCardRank(bot)[0],
+                      fiveCardRank(mid)[0],
+                      threeCardRank(top)[0]
+                    ];
+                    if (!best || score > best[0])
+                      best = [score, { top, mid, bot }];
                   }
                 }
-              }
-            }
-          }
-        }
       }
-    }
-  }
+
   return best ? best[1] : null;
 }
 
@@ -100,7 +108,7 @@ function formatCard(card) {
         color: isRed ? 'red' : 'black',
         marginRight: '8px',
         fontWeight: 'bold',
-        fontSize: '1.2rem',
+        fontSize: '1.2rem'
       }}
     >
       {suitSymbols[suit]}{rank}
@@ -114,7 +122,7 @@ export default function ThirteenCardAnalyzer() {
   const [result, setResult] = useState(null);
 
   const handleAnalyze = () => {
-    const cards = `${input1} ${input2}`.trim().split(/\s+/);
+    const cards = `${input1} ${input2}`.trim().toUpperCase().split(/\s+/);
     if (cards.length !== 13) {
       alert('请输入13张牌');
       return;
@@ -177,7 +185,7 @@ export default function ThirteenCardAnalyzer() {
           fontSize: '0.9rem'
         }}
       >
-        <h3>使用说明：</h3>
+        <h3><strong>使用说明：</strong></h3>
         <p>红桃：H（如 AH 表示红桃A）</p>
         <p>黑桃：S（如 KS 表示黑桃K）</p>
         <p>方块：D（如 QD 表示方块Q）</p>
@@ -187,4 +195,5 @@ export default function ThirteenCardAnalyzer() {
     </div>
   );
 }
+
 
