@@ -191,6 +191,7 @@ export default function ThirteenCardAnalyzer() {
         <p>方块：D（如 QD 表示方块Q）</p>
         <p>梅花：C（如 7C 表示梅花7）</p>
         <p>10 用 T 表示，如 10H 应写作 TH</p>
+        <p>Desgin by Tom 2025 VER1.0</p>
       </div>
     </div>
   );
