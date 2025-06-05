@@ -12,37 +12,54 @@ function isFlush(cards) {
 
 function isStraight(cards) {
   const values = cards.map(card => cardValue(card)).sort((a, b) => a - b);
-  const lowAce = [0, 1, 2, 3, 12];
-  if (JSON.stringify(values) === JSON.stringify(lowAce)) return [true, [3]];
+  const lowAce = [0, 1, 2, 3, 12]; // A2345 顺子
+  if (JSON.stringify(values) === JSON.stringify(lowAce)) return [true, [3]]; // 返回A2345顺子的最大牌值（即5）
   for (let i = 0; i < values.length - 1; i++) {
     if (values[i] + 1 !== values[i + 1]) return [false, []];
   }
-  return [true, values.slice().reverse()];
+  return [true, values.slice().reverse()]; // 返回顺子的牌值，从大到小
 }
 
 function fiveCardRank(cards) {
   const counts = {};
-  const values = cards.map(card => cardValue(card)).sort((a, b) => b - a);
+  // 对牌面值进行排序，优先考虑葫芦优化，所以先不直接排序，而是按出现次数和牌值大小排序
+  const values = cards.map(card => cardValue(card));
   for (const card of cards) counts[card[0]] = (counts[card[0]] || 0) + 1;
+
+  // 根据牌的出现次数和牌值大小进行排序
+  // 主要目的是为了更方便地找到三条和对子
   const vals = Object.entries(counts).sort((a, b) => {
-    if (b[1] !== a[1]) return b[1] - a[1];
-    return cardValue(b[0]) - cardValue(a[0]);
+    if (b[1] !== a[1]) return b[1] - a[1]; // 先按数量降序
+    return cardValue(b[0]) - cardValue(a[0]); // 数量相同则按牌值降序
   });
 
   const flush = isFlush(cards);
   const [straight, svals] = isStraight(cards);
+  const sortedValuesDesc = values.sort((a, b) => b - a); // 牌值从大到小排序
 
   if (flush && straight) return [8, svals]; // 同花顺
   if (vals[0][1] === 4) return [7, [cardValue(vals[0][0])]]; // 四条
-  if (vals[0][1] === 3 && vals[1][1] === 2)
-    return [6, [cardValue(vals[0][0])]]; // 葫芦，大小只看三条
-  if (flush) return [5, values]; // 同花
+  
+  if (vals[0][1] === 3 && vals[1][1] === 2) {
+    // 葫芦优化：当存在三条和一对时，找到所有对子，选择最小的对子来构成葫芦
+    const threeOfAKindRank = cardValue(vals[0][0]);
+    const pairs = vals.filter(v => v[1] === 2).map(v => cardValue(v[0])).sort((a, b) => a - b); // 找到所有对子并升序排序
+    
+    // 如果有多个对子，选择最小的对子作为葫芦的对子部分
+    if (pairs.length > 0) {
+      return [6, [threeOfAKindRank, pairs[0]]]; // 葫芦，返回三条的牌值和最小对子的牌值
+    } else {
+      // 理论上这里不会发生，因为前面已经判断了 vals[1][1] === 2
+      return [6, [threeOfAKindRank]]; 
+    }
+  }
+  if (flush) return [5, sortedValuesDesc]; // 同花
   if (straight) return [4, svals]; // 顺子
   if (vals[0][1] === 3) return [3, [cardValue(vals[0][0])]]; // 三条
   if (vals.filter(v => v[1] === 2).length === 2)
     return [2, vals.filter(v => v[1] === 2).map(v => cardValue(v[0])).sort((a, b) => b - a)]; // 两对
   if (vals[0][1] === 2) return [1, [cardValue(vals[0][0])]]; // 一对
-  return [0, values]; // 散牌
+  return [0, sortedValuesDesc]; // 散牌
 }
 
 function threeCardRank(cards) {
@@ -59,40 +76,90 @@ function isValidComb(top, mid, bot) {
   const t = threeCardRank(top);
   const m = fiveCardRank(mid);
   const b = fiveCardRank(bot);
-  return b[0] > m[0] && m[0] >= t[0]; // 符合 罗宋顺序
+
+  // 比较函数
+  const compareRanks = (rankA, rankB, valuesA, valuesB) => {
+    if (rankA !== rankB) return rankA - rankB; // 牌型不同直接比较牌型
+    // 牌型相同，比较牌值。这里假设所有牌型返回的 values 都是可直接比较的（已排序）
+    for (let i = 0; i < valuesA.length; i++) {
+      if (valuesA[i] !== valuesB[i]) {
+        return valuesA[i] - valuesB[i];
+      }
+    }
+    return 0; // 牌型和牌值都相同
+  };
+
+  // 罗宋顺序：底道 > 中道 > 头道
+  // 注意：在罗宋中，如果牌型相同，需要比较牌值。这里原始代码只比较了牌型等级
+  // 修改为更严格的比较，确保下道牌型及牌值都大于等于上道
+  const botVsMid = compareRanks(b[0], m[0], b[1], m[1]);
+  const midVsTop = compareRanks(m[0], t[0], m[1], t[1]);
+
+  return botVsMid >= 0 && midVsTop >= 0; // 符合罗宋顺序
 }
 
 function evaluate(cards) {
   let best = null;
+  let bestScore = -1; // 用于存储最高分数，方便比较
   const n = cards.length;
 
-  for (let i = 0; i < n; i++)
-    for (let j = i + 1; j < n; j++)
-      for (let k = j + 1; k < n; k++) {
-        const top = [cards[i], cards[j], cards[k]];
-        const remain1 = cards.filter((_, idx) => idx !== i && idx !== j && idx !== k);
-
-        for (let a = 0; a < remain1.length; a++)
-          for (let b = a + 1; b < remain1.length; b++)
-            for (let c = b + 1; c < remain1.length; c++)
-              for (let d = c + 1; d < remain1.length; d++)
-                for (let e = d + 1; e < remain1.length; e++) {
-                  const mid = [remain1[a], remain1[b], remain1[c], remain1[d], remain1[e]];
-                  const bot = remain1.filter((_, idx) => ![a, b, c, d, e].includes(idx));
-
-                  if (isValidComb(top, mid, bot)) {
-                    const score = [
-                      fiveCardRank(bot)[0],
-                      fiveCardRank(mid)[0],
-                      threeCardRank(top)[0]
-                    ];
-                    if (!best || score > best[0])
-                      best = [score, { top, mid, bot }];
-                  }
-                }
+  // 使用更高效的组合生成方式，避免多层循环
+  // 生成所有可能的13张牌分发方式：3张头道，5张中道，5张底道
+  const combinations = (arr, k) => {
+    const result = [];
+    const f = (prefix, arr) => {
+      if (k === 0) {
+        result.push(prefix);
+        return;
       }
+      for (let i = 0; i < arr.length; i++) {
+        f(prefix.concat(arr[i]), arr.slice(i + 1), k - 1);
+      }
+    };
+    f([], arr, k);
+    return result;
+  };
 
-  return best ? best[1] : null;
+  const allCards = cards;
+  const topCombinations = combinations(allCards, 3);
+
+  for (const top of topCombinations) {
+    const remainingCardsAfterTop = allCards.filter(card => !top.includes(card));
+    const midCombinations = combinations(remainingCardsAfterTop, 5);
+
+    for (const mid of midCombinations) {
+      const bot = remainingCardsAfterTop.filter(card => !mid.includes(card));
+
+      if (isValidComb(top, mid, bot)) {
+        const scoreBot = fiveCardRank(bot);
+        const scoreMid = fiveCardRank(mid);
+        const scoreTop = threeCardRank(top);
+
+        // 计算一个总分数来比较组合的优劣
+        // 权重可以根据罗宋的实际计分规则调整，这里简单地给予下道更高的权重
+        // 例如：底道分数 * 100 + 中道分数 * 10 + 头道分数
+        // 这里的 score 用数组表示各个道的牌型等级，可以逐级比较
+        const currentScore = [scoreBot[0], scoreMid[0], scoreTop[0]];
+        
+        // 进一步细化分数比较：如果牌型等级相同，比较牌值
+        const compareScores = (s1, s2) => {
+          if (s1[0] !== s2[0]) return s1[0] - s2[0]; // 比较底道牌型
+          if (s1[1] !== s2[1]) return s1[1] - s2[1]; // 比较中道牌型
+          if (s1[2] !== s2[2]) return s1[2] - s2[2]; // 比较头道牌型
+          
+          // 如果牌型等级完全相同，则比较牌值（这里需要更复杂的逻辑，因为每种牌型返回的values结构不同）
+          // 简单起见，目前只比较牌型等级，若需精确比较，可展开对 scoreBot[1], scoreMid[1], scoreTop[1] 的比较
+          return 0;
+        };
+
+        if (!best || compareScores(currentScore, bestScore) > 0) {
+          bestScore = currentScore;
+          best = { top, mid, bot };
+        }
+      }
+    }
+  }
+  return best; // 返回最佳组合
 }
 
 function formatCard(card) {
@@ -195,5 +262,3 @@ export default function ThirteenCardAnalyzer() {
     </div>
   );
 }
-
-
